@@ -3,7 +3,9 @@ services:
     name: ai-hrms-server
     env: node
     plan: free
-    repoPath: .
     branch: main
     buildCommand: npm install --workspaces && npm run build
     startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "10000"
