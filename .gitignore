@@ -1,0 +1,15 @@
+.env
+**/.env
+.env.local
+.env.*.local
+
+# Node modules and build outputs
+node_modules/
+dist/
+
+# Vite cache
+.vite/
+
+# Editor folders
+.vscode/
+.idea/
