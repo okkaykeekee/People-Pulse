@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../utils/api';
 
 function PerformanceFeedback() {
   const [achievements, setAchievements] = useState('');
@@ -31,7 +32,7 @@ function PerformanceFeedback() {
     setFeedback('');
 
     try {
-      const response = await axios.post('http://localhost:5000/generate-feedback', {
+      const response = await axios.post(`${API_URL}/generate-feedback`, {
         achievements: trimmedAchievements,
       });
 

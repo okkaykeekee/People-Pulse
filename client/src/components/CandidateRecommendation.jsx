@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { parseDocumentFile } from '../utils/fileParser';
+import { API_URL } from '../utils/api';
 
 function CandidateRecommendation() {
   const [name, setName] = useState('');
@@ -53,7 +54,7 @@ function CandidateRecommendation() {
     setRecommendation('');
 
     try {
-      const response = await axios.post('http://localhost:5000/candidate-recommendation', {
+      const response = await axios.post(`${API_URL}/candidate-recommendation`, {
         name: trimmedName,
         resume: trimmedResume,
       });

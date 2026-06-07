@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../utils/api';
 
 function InterviewQuestions() {
   const [role, setRole] = useState('');
@@ -61,7 +62,7 @@ function InterviewQuestions() {
     setQuestions([]);
 
     try {
-      const response = await axios.post('http://localhost:5000/generate-questions', {
+      const response = await axios.post(`${API_URL}/generate-questions`, {
         role: trimmedRole,
       });
 
