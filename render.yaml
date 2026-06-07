@@ -5,17 +5,5 @@ services:
     plan: free
     repoPath: .
     branch: main
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
-    envVars:
-      - key: PORT
-        value: "3000"
-
-  - type: static
-    name: ai-hrms-client
-    env: static
-    plan: free
-    repoPath: .
-    branch: main
-    buildCommand: cd client && npm install && npm run build
-    publishPath: client/dist
+    buildCommand: npm install --workspaces && npm run build
+    startCommand: npm start
