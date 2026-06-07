@@ -1,21 +1,35 @@
+import { getStoredUser } from '../utils/auth';
+
 function Dashboard() {
-  const cards = [
-    {
-      title: 'Total Employees',
-      value: '150',
-      description: 'Active staff across teams',
-    },
-    {
-      title: 'Attendance Rate',
-      value: '92%',
-      description: 'Average daily attendance',
-    },
-    {
-      title: 'Performance Score',
-      value: '88%',
-      description: 'Overall employee performance',
-    },
-  ];
+  const user = getStoredUser();
+  const isAdmin = user?.role === 'Admin';
+
+  const cards = isAdmin
+    ? [
+        { title: 'Total Employees', value: '150', description: 'Active staff across teams' },
+        { title: 'Attendance Rate', value: '92%', description: 'Average daily attendance' },
+        { title: 'Performance Score', value: '88%', description: 'Overall employee performance' },
+      ]
+    : [
+        { title: 'Goal Progress', value: '78%', description: 'Tasks completed toward your target' },
+        { title: 'Pending Reviews', value: '3', description: 'Open feedback items' },
+        { title: 'Skill Growth', value: '84%', description: 'Training completion rate' },
+      ];
+
+  const heroHeading = isAdmin ? 'AI-powered workforce insights' : 'Your personalized growth dashboard';
+  const heroCopy = isAdmin
+    ? 'Monitor staffing trends, attendance, and performance in a clean, responsive workspace designed for modern HR teams.'
+    : 'Track your progress, performance signals, and development opportunities in one place.';
+
+  const quickActions = isAdmin
+    ? [
+        { title: 'Review candidate resumes', description: 'Prioritize top talent and update shortlists.' },
+        { title: 'Schedule feedback session', description: 'Plan one-on-one performance check-ins.' },
+      ]
+    : [
+        { title: 'Complete your profile', description: 'Keep your skills and goals up to date.' },
+        { title: 'Submit performance updates', description: 'Share recent accomplishments with your manager.' },
+      ];
 
   return (
     <main className="flex-1 bg-slate-50 p-6 md:p-10">
@@ -23,12 +37,12 @@ function Dashboard() {
         <section className="rounded-[2rem] bg-gradient-to-r from-sky-600 via-sky-700 to-blue-900 p-8 text-white shadow-2xl shadow-slate-400/10 sm:p-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-sky-200">HR Dashboard</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-sky-200">{isAdmin ? 'HR Dashboard' : 'Employee Dashboard'}</p>
               <h2 className="mt-3 text-4xl font-semibold">
-                AI-powered workforce insights
+                {heroHeading}
               </h2>
               <p className="mt-4 max-w-xl text-slate-100/90">
-                Monitor staffing trends, attendance, and performance in a clean, responsive workspace designed for modern HR teams.
+                {heroCopy}
               </p>
             </div>
             <div className="rounded-3xl border border-white/20 bg-white/10 px-6 py-4 text-right backdrop-blur-sm sm:px-8">
@@ -88,14 +102,12 @@ function Dashboard() {
             </div>
 
             <ul className="mt-7 space-y-4 text-slate-700">
-              <li className="rounded-3xl border border-slate-200/80 bg-slate-50 p-4">
-                <p className="font-semibold">Review candidate resumes</p>
-                <p className="mt-2 text-sm text-slate-500">Prioritize top talent and update shortlists.</p>
-              </li>
-              <li className="rounded-3xl border border-slate-200/80 bg-slate-50 p-4">
-                <p className="font-semibold">Schedule feedback session</p>
-                <p className="mt-2 text-sm text-slate-500">Plan one-on-one performance check-ins.</p>
-              </li>
+              {quickActions.map((item) => (
+                <li key={item.title} className="rounded-3xl border border-slate-200/80 bg-slate-50 p-4">
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="mt-2 text-sm text-slate-500">{item.description}</p>
+                </li>
+              ))}
             </ul>
           </div>
         </section>

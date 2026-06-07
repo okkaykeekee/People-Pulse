@@ -1,6 +1,23 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { parseDocumentFile } from '../utils/fileParser';
+import { API_URL } from '../utils/api';
+
+function parseResumeOutput(output) {
+  const scoreMatch = output.match(/score[:\-\s]*([0-9]{1,2}(?:\.[0-9]+)?(?:\/10)?)/i);
+  const skillsMatch = output.match(/skills[:\-\s]*([A-Za-z0-9,\s]+)/i);
+  const recommendationMatch = output.match(/recommendation[:\-\s]*([A-Za-z\s]+)/i);
+  const summaryMatch = output.match(/(?:overall summary|summary|strengths|weaknesses)[:\-\s]*([^\n]+)/i);
+  const skills = skillsMatch?.[1]?.split(/[,;]| and /i).map((skill) => skill.trim()).filter(Boolean) || [];
+
+  return {
+    output,
+    score: scoreMatch?.[1] || 'N/A',
+    skills,
+    recommendation: recommendationMatch?.[1]?.trim() || 'See full analysis below.',
+    summary: summaryMatch?.[1]?.trim() || output.split(/\r?\n/).slice(0, 2).join(' '),
+  };
+}
 
 function ResumeScreening() {
   const [resumeText, setResumeText] = useState('');
@@ -50,15 +67,15 @@ function ResumeScreening() {
 
     setLoading(true);
     try {
-      const resp = await axios.post('http://localhost:5000/analyze-resume', { text: resumeText });
+      const resp = await axios.post(`${API_URL}/analyze-resume`, { text: resumeText });
       const output = resp.data?.output || '';
-      const analysis = { output };
+      const analysis = parseResumeOutput(output);
       setResult(analysis);
       saveHistoryEntry({
         id: Date.now(),
         type: 'Resume Screening',
         title: 'Resume analyzed',
-        detail: output.slice(0, 200),
+        detail: analysis.summary.slice(0, 200),
         timestamp: new Date().toISOString(),
       });
     } catch (err) {
@@ -151,43 +168,42 @@ function ResumeScreening() {
                 <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
                   <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Score</p>
                   <p className="mt-4 text-4xl font-semibold text-slate-900">
-                    {(result.output && result.output.match(/\d+(?:\.\d+)?(?:\/10)?/i))
-                      ? result.output.match(/\d+(?:\.\d+)?(?:\/10)?/i)[0]
-                      : '—'}
+                    {result.score || '—'}
                   </p>
                 </div>
 
                 <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6 md:col-span-2">
-                  <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Skills Found</p>
+                  <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Skills Identified</p>
                   <div className="mt-4 flex flex-wrap gap-3">
-                    {(() => {
-                      const out = result.output || '';
-                      const skillsMatch = out.match(/Skills[:\-\s]*([A-Za-z0-9,\s]+)/i);
-                      const skills = skillsMatch ? skillsMatch[1].split(',').map((s) => s.trim()).filter(Boolean) : [];
-                      if (skills.length > 0) {
-                        return skills.map((s) => (
-                          <span key={s} className="rounded-full bg-sky-100 px-4 py-2 text-sm font-medium text-sky-700">
-                            {s}
-                          </span>
-                        ));
-                      }
-                      return <p className="text-sm text-slate-600">Skills will appear here after analysis.</p>;
-                    })()}
+                    {result.skills.length > 0 ? (
+                      result.skills.map((skill) => (
+                        <span key={skill} className="rounded-full bg-sky-100 px-4 py-2 text-sm font-medium text-sky-700">
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-600">Skills will appear here after analysis.</p>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Recommendation</p>
-                <p className="mt-4 text-xl font-semibold text-slate-900">
-                  {(result.output && result.output.match(/Recommendation[:\-\s]*([A-Za-z\s]+)/i))
-                    ? result.output.match(/Recommendation[:\-\s]*([A-Za-z\s]+)/i)[1]
-                    : 'See details'}
-                </p>
-                <div className="mt-3 space-y-3 text-sm text-slate-600">
-                  {result.output.split(/\r?\n/).filter(Boolean).map((line, index) => (
-                    <p key={index}>{line}</p>
-                  ))}
+                <p className="mt-4 text-xl font-semibold text-slate-900">{result.recommendation}</p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
+                    <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Summary</p>
+                    <p className="mt-3 text-sm leading-7 text-slate-700">{result.summary}</p>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
+                    <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Full output</p>
+                    <div className="mt-3 space-y-3 text-sm text-slate-600">
+                      {result.output.split(/\r?\n/).filter(Boolean).map((line, index) => (
+                        <p key={index}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

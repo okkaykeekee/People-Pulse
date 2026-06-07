@@ -1,21 +1,31 @@
 import { NavLink } from "react-router-dom";
+import { getStoredUser } from '../utils/auth';
 
 function Sidebar() {
-  const isAuthenticated = typeof window !== "undefined" && Boolean(localStorage.getItem("hrmsUser"));
-  const user = isAuthenticated ? JSON.parse(localStorage.getItem("hrmsUser")) : null;
+  const user = getStoredUser();
 
-  const navItems = isAuthenticated
-    ? [
-        { label: 'Dashboard', to: '/dashboard' },
-        { label: 'Employees', to: '/employees' },
-        { label: 'Resume Screening', to: '/resume-screening' },
-        { label: 'Interview Questions', to: '/interview-questions' },
-        { label: 'Performance Feedback', to: '/performance-feedback' },
-        { label: 'Candidate Recommendation', to: '/candidate-recommendation' },
-        { label: 'History', to: '/history' },
-        { label: 'Settings', to: '/settings' },
-        { label: 'Logout', to: '/logout' },
-      ]
+  const navItems = user
+    ? user.role === 'Admin'
+      ? [
+          { label: 'Dashboard', to: '/dashboard' },
+          { label: 'Employees', to: '/employees' },
+          { label: 'Resume Screening', to: '/resume-screening' },
+          { label: 'Interview Questions', to: '/interview-questions' },
+          { label: 'Performance Feedback', to: '/performance-feedback' },
+          { label: 'Candidate Recommendation', to: '/candidate-recommendation' },
+          { label: 'History', to: '/history' },
+          { label: 'Settings', to: '/settings' },
+          { label: 'Logout', to: '/logout' },
+        ]
+      : [
+          { label: 'Dashboard', to: '/dashboard' },
+          { label: 'Resume Screening', to: '/resume-screening' },
+          { label: 'Interview Questions', to: '/interview-questions' },
+          { label: 'Performance Feedback', to: '/performance-feedback' },
+          { label: 'Candidate Recommendation', to: '/candidate-recommendation' },
+          { label: 'History', to: '/history' },
+          { label: 'Logout', to: '/logout' },
+        ]
     : [{ label: 'Login', to: '/login' }];
 
   return (

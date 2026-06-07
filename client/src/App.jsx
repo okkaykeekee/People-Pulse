@@ -10,6 +10,7 @@ import CandidateRecommendation from "./components/CandidateRecommendation";
 import LoginPage from "./components/LoginPage";
 import History from "./components/History";
 import Settings from "./components/Settings";
+import { getStoredUser } from "./utils/auth";
 
 function AppLayout() {
   return (
@@ -25,8 +26,16 @@ function AppLayout() {
 }
 
 function RequireAuth({ children }) {
-  const isAuthenticated = typeof window !== "undefined" && Boolean(localStorage.getItem("hrmsUser"));
+  const isAuthenticated = Boolean(getStoredUser());
   return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+function RequireRole({ allowedRoles, children }) {
+  const user = getStoredUser();
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
 }
 
 function LogoutPage() {
@@ -45,13 +54,13 @@ function App() {
         <Route path="/" element={<RequireAuth><AppLayout /></RequireAuth>}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="employees" element={<EmployeesPage />} />
+          <Route path="employees" element={<RequireRole allowedRoles={["Admin"]}><EmployeesPage /></RequireRole>} />
           <Route path="resume-screening" element={<ResumeScreening />} />
           <Route path="interview-questions" element={<InterviewQuestions />} />
           <Route path="performance-feedback" element={<PerformanceFeedback />} />
           <Route path="candidate-recommendation" element={<CandidateRecommendation />} />
           <Route path="history" element={<History />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="settings" element={<RequireRole allowedRoles={["Admin"]}><Settings /></RequireRole>} />
           <Route path="logout" element={<LogoutPage />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>

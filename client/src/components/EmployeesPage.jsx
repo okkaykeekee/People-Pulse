@@ -1,16 +1,38 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+const defaultEmployees = [
+  { id: 1, name: 'Rahul Sharma', role: 'Software Engineer', department: 'IT', status: 'Active' },
+  { id: 2, name: 'Priya Verma', role: 'HR Manager', department: 'HR', status: 'Active' },
+  { id: 3, name: 'Amit Kumar', role: 'Data Analyst', department: 'Analytics', status: 'On Leave' },
+  { id: 4, name: 'Sneha Reddy', role: 'Recruiter', department: 'HR', status: 'Active' },
+  { id: 5, name: 'Arjun Singh', role: 'AI Engineer', department: 'AI Team', status: 'Active' },
+];
 
 function EmployeesPage() {
-  const [employees, setEmployees] = useState([
-    { name: 'Rahul Sharma', role: 'Software Engineer', department: 'IT', status: 'Active' },
-    { name: 'Priya Verma', role: 'HR Manager', department: 'HR', status: 'Active' },
-    { name: 'Amit Kumar', role: 'Data Analyst', department: 'Analytics', status: 'On Leave' },
-    { name: 'Sneha Reddy', role: 'Recruiter', department: 'HR', status: 'Active' },
-    { name: 'Arjun Singh', role: 'AI Engineer', department: 'AI Team', status: 'Active' },
-  ]);
+  const [employees, setEmployees] = useState(defaultEmployees);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [newEmployee, setNewEmployee] = useState({ name: '', role: '', department: '', status: 'Active' });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem('hrmsEmployees');
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setEmployees(parsed);
+      }
+    } catch {
+      // ignore invalid data
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('hrmsEmployees', JSON.stringify(employees));
+  }, [employees]);
 
   const filteredEmployees = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -34,7 +56,16 @@ function EmployeesPage() {
       return;
     }
 
-    setEmployees((current) => [...current, { ...newEmployee, name: newEmployee.name.trim(), role: newEmployee.role.trim(), department: newEmployee.department.trim() }]);
+    setEmployees((current) => [
+      ...current,
+      {
+        id: Date.now(),
+        ...newEmployee,
+        name: newEmployee.name.trim(),
+        role: newEmployee.role.trim(),
+        department: newEmployee.department.trim(),
+      },
+    ]);
     setShowModal(false);
   };
 
@@ -85,7 +116,7 @@ function EmployeesPage() {
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
               {filteredEmployees.map((employee) => (
-                <tr key={`${employee.name}-${employee.role}`} className="hover:bg-slate-50 transition">
+                <tr key={`${employee.id}-${employee.name}`} className="hover:bg-slate-50 transition">
                   <td className="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-900">{employee.name}</td>
                   <td className="whitespace-nowrap px-6 py-5 text-sm text-slate-700">{employee.role}</td>
                   <td className="whitespace-nowrap px-6 py-5 text-sm text-slate-700">{employee.department}</td>
