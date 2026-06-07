@@ -10,9 +10,10 @@ console.log("GOOGLE_API_KEY loaded:", Boolean(process.env.GOOGLE_API_KEY));
 const express = require("express");
 const cors = require("cors");
 const { GoogleGenAI } = require("@google/genai");
+const fs = require('fs');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -195,6 +196,15 @@ app.post("/candidate-recommendation", async (req, res) => {
   }
 });
 
+// Serve static client build if present (for production on Render)
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log("Server running on port 5000");
+  console.log(`Server running on port ${PORT}`);
 });
